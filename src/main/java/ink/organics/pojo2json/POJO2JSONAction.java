@@ -58,7 +58,7 @@ public abstract class POJO2JSONAction extends AnAction {
         }
 
         try {
-            String json = pojo2JSONParser.uElementToJSONString(uElement);
+            String json = pojo2JSONParser.uElementToJSONString(uElement, isNeedJavaDoc());
 
             ClipboardHandler.copyToClipboard(json);
 
@@ -76,4 +76,6 @@ public abstract class POJO2JSONAction extends AnAction {
                 .stream()
                 .anyMatch(l -> l.isFileSupported(psiFile.getName()));
     }
+
+    public abstract boolean isNeedJavaDoc();
 }

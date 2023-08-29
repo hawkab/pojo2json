@@ -14,6 +14,7 @@ import org.jetbrains.uast.UElement;
 import org.jetbrains.uast.UVariable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public abstract class POJO2JSONParser {
@@ -57,7 +58,7 @@ public abstract class POJO2JSONParser {
 
     protected abstract Object getFakeValue(SpecifyType specifyType);
 
-    public String uElementToJSONString(@NotNull final UElement uElement) {
+    public String uElementToJSONString(@NotNull final UElement uElement, boolean withJavaDoc) {
 
         Object result = null;
 
@@ -68,8 +69,39 @@ public abstract class POJO2JSONParser {
             // UClass.getJavaPsi() IDEA 21* and last version recommend
             result = parseClass(((UClass) uElement).getJavaPsi(), 0, List.of(), Map.of());
         }
+        return getJSON((UClass) uElement, withJavaDoc, result);
+    }
 
-        return gsonBuilder.create().toJson(result);
+    @SuppressWarnings("unchecked")
+    private String getJSON(UClass uElement, boolean withJavaDoc, Object result) {
+        var json = gsonBuilder.create().toJson(result);
+        if (withJavaDoc) {
+            var javaDocs = getJavaDocs(uElement.getJavaPsi().getAllFields(), ((Map<String, Object>) result).keySet());
+            var resultJson = new AtomicReference<>(json);
+            javaDocs.forEach((key, value) ->
+                    resultJson.set(resultJson.get().replaceAll("(\"" + key + "\".*)", "$1" + "//" + value)));
+            return resultJson.get();
+        }
+        return json;
+    }
+
+    private static Map<String, String> getJavaDocs(PsiField[] classFields, Set<String> jsonFieldNames) {
+        return Arrays.stream(classFields)
+                .filter(classField -> classField.getDocComment() != null)
+                .map(classField -> jsonFieldNames.stream()
+                        .filter(fieldName -> classField.getName().equals(fieldName))
+                        .findFirst()
+                        .map(d -> Map.entry(classField.getName(), getText(classField)))
+                        .orElse(null))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private static String getText(PsiField d) {
+        return Optional.ofNullable(d.getDocComment())
+                .map(PsiElement::getText)
+                .orElse("")
+                .replaceAll("[\\*\\/\\s]{2,}", "");
     }
 
     private Map<String, Object> parseClass(PsiClass psiClass, int level, List<String> ignoreProperties, Map<String, PsiType> psiClassGenerics) {

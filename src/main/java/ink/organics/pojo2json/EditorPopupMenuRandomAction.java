@@ -7,4 +7,9 @@ public class EditorPopupMenuRandomAction extends EditorPopupMenuAction {
     public EditorPopupMenuRandomAction() {
         super(POJO2JSONParserFactory.RANDOM_POJO_2_JSON_PARSER);
     }
+
+    @Override
+    public boolean isNeedJavaDoc() {
+        return false;
+    }
 }

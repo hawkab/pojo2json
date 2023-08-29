@@ -2,14 +2,14 @@ package ink.organics.pojo2json;
 
 import ink.organics.pojo2json.parser.POJO2JSONParserFactory;
 
-public class ProjectViewPopupMenuDefaultAction extends ProjectViewPopupMenuAction {
+public class EditorPopupMenuDocAction extends EditorPopupMenuAction {
 
-    public ProjectViewPopupMenuDefaultAction() {
+    public EditorPopupMenuDocAction() {
         super(POJO2JSONParserFactory.DEFAULT_POJO_2_JSON_PARSER);
     }
 
     @Override
     public boolean isNeedJavaDoc() {
-        return false;
+        return true;
     }
 }

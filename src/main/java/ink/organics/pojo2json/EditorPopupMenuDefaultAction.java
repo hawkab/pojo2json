@@ -7,4 +7,9 @@ public class EditorPopupMenuDefaultAction extends EditorPopupMenuAction {
     public EditorPopupMenuDefaultAction() {
         super(POJO2JSONParserFactory.DEFAULT_POJO_2_JSON_PARSER);
     }
+
+    @Override
+    public boolean isNeedJavaDoc() {
+        return false;
+    }
 }
